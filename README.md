@@ -1,42 +1,68 @@
 # Sistema de Gestão de Tarefas (To-Do List)
 
-Um sistema de gerenciamento de tarefas simples e moderno desenvolvido com PHP PDO e MySQL, com interface responsiva utilizando Flexbox e Grid.
+![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=flat-square&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-5.7%2B-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+![PDO](https://img.shields.io/badge/PDO-Security-brightgreen?style=flat-square)
+![REST API](https://img.shields.io/badge/REST_API-JSON-orange?style=flat-square)
+![Flexbox](https://img.shields.io/badge/Flexbox-Layout-9cf?style=flat-square)
+![Grid](https://img.shields.io/badge/Grid-Layout-9cf?style=flat-square)
+![Responsive](https://img.shields.io/badge/Responsive-Design-blue?style=flat-square)
+![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
 
-## Características
+Um sistema moderno e completo para gerenciamento de tarefas, desenvolvido com PHP PDO e MySQL, com interface responsiva e interativa.
 
-- Sistema completo de autenticação de usuários (registro, login, logout)
-- CRUD completo de tarefas (criar, listar, editar, excluir)
-- Filtros por status (pendente, em andamento, concluído)
-- Ordenação e pesquisa de tarefas
-- Priorização de tarefas (baixa, média, alta)
-- Interface responsiva usando Flexbox e Grid
-- Segurança avançada com PDO e prepared statements
-- API REST para operações CRUD
+<p align="center">
+  <img src="https://via.placeholder.com/800x400?text=Sistema+de+Gestão+de+Tarefas" alt="Sistema de Gestão de Tarefas Preview" width="800"/>
+</p>
 
-## Tecnologias Utilizadas
+## ✨ Características
 
-- Backend: PHP 7.4+ com PDO
-- Banco de Dados: MySQL
-- Frontend: HTML5, CSS3 (Flexbox/Grid), JavaScript (ES6+)
-- Biblioteca de ícones: Font Awesome
-- Responsividade: Design adaptativo em todos os dispositivos
+| Funcionalidade | Descrição |
+|----------------|-----------|
+| 🔐 **Autenticação** | Sistema completo de registro, login e logout de usuários |
+| 📝 **CRUD de Tarefas** | Criar, listar, editar e excluir tarefas de forma intuitiva |
+| 🔍 **Filtros** | Filtrar tarefas por status (pendente, em andamento, concluído) |
+| 🔄 **Ordenação** | Ordenar tarefas por diversos critérios (data, prioridade, alfabética) |
+| 🔎 **Pesquisa** | Busca instantânea em todo o conteúdo das tarefas |
+| ⭐ **Priorização** | Atribuir prioridades às tarefas (baixa, média, alta) |
+| 📱 **Responsividade** | Interface adaptável a qualquer dispositivo |
+| 🔒 **Segurança** | PDO com prepared statements para prevenir injeção SQL |
+| 🌐 **API REST** | Endpoints para integração com outros sistemas |
 
-## Estrutura de Diretórios
+## 🛠️ Tecnologias Utilizadas
+
+### Backend
+- ![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white) PHP 7.4+ com PDO
+- ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) MySQL 5.7+
+- ![Apache](https://img.shields.io/badge/Apache-D22128?style=flat-square&logo=apache&logoColor=white) Apache com mod_rewrite
+
+### Frontend
+- ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white) HTML5 Semântico
+- ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white) CSS3 (Flexbox/Grid)
+- ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) JavaScript ES6+
+- ![Font Awesome](https://img.shields.io/badge/Font_Awesome-339AF0?style=flat-square&logo=font-awesome&logoColor=white) Font Awesome para ícones
+
+## 🗂️ Estrutura de Diretórios
 
 ```
 todo-list/
 │
-├── api/                # Endpoints da API
+├── api/                # Endpoints da API REST
 │   ├── auth.php        # Autenticação de usuários
-│   └── tasks.php       # Gerenciamento de tarefas
+│   ├── tasks.php       # Gerenciamento de tarefas
+│   └── profile.php     # Gerenciamento de perfil
 │
 ├── classes/            # Classes PHP
-│   ├── Database.php    # Classe para conexão e operações de BD
-│   ├── Task.php        # Classe para gestão de tarefas
-│   └── User.php        # Classe para gestão de usuários
+│   ├── Database.php    # Singleton para conexão e operações de BD
+│   ├── Task.php        # Gestão de tarefas
+│   └── User.php        # Gestão de usuários
 │
 ├── config/             # Configurações
-│   └── config.php      # Configurações gerais
+│   ├── config.php      # Configurações gerais
+│   └── db.php          # Configurações do banco de dados
 │
 ├── css/                # Estilos CSS
 │   ├── style.css       # Estilos principais
@@ -49,8 +75,7 @@ todo-list/
 ├── js/                 # Scripts JavaScript
 │   └── main.js         # JavaScript principal
 │
-├── uploads/            # Diretório para uploads (anexos)
-│
+├── uploads/            # Diretório para uploads
 ├── temp/               # Diretório temporário
 │
 ├── .htaccess           # Configurações do Apache
@@ -59,69 +84,123 @@ todo-list/
 ├── login-simple.php    # Versão alternativa de login
 ├── register.php        # Página de registro
 ├── tasks.php           # Página principal de tarefas
+├── profile.php         # Página de perfil do usuário
 ├── logout.php          # Script de logout
+├── 404.php             # Página de erro 404
 ├── install.php         # Script de instalação
 └── README.md           # Documentação
 ```
 
-## Requisitos
+## 📋 Requisitos
 
-- PHP 7.4 ou superior
-- MySQL 5.7 ou superior
-- Servidor web Apache com mod_rewrite habilitado
+- ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=flat-square&logo=php&logoColor=white) PHP 7.4 ou superior
+- ![MySQL](https://img.shields.io/badge/MySQL-5.7%2B-4479A1?style=flat-square&logo=mysql&logoColor=white) MySQL 5.7 ou superior
+- ![Apache](https://img.shields.io/badge/Apache-D22128?style=flat-square&logo=apache&logoColor=white) Servidor web Apache com mod_rewrite habilitado
+- Extensões PHP: PDO, PDO_MySQL, JSON
 
-## Instalação
+## 🚀 Instalação
 
-1. Clone o repositório para o diretório do seu servidor web:
-   ```
+1. **Clone o repositório**
+   ```bash
    git clone https://github.com/seu-usuario/todo-list.git
+   cd todo-list
    ```
 
-2. Crie um banco de dados MySQL:
+2. **Crie o banco de dados**
    ```sql
-   CREATE DATABASE todo_list_system;
+   CREATE DATABASE todo_list_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-3. Configure o arquivo `config/config.php` com as informações do seu ambiente:
-   - Edite as constantes DB_HOST, DB_NAME, DB_USER e DB_PASS
-   - Ajuste BASE_URL para corresponder ao seu ambiente
+3. **Configure o ambiente**
+   - Edite `config/db.php` com os dados de conexão:
+     ```php
+     define('DB_HOST', 'localhost');
+     define('DB_NAME', 'todo_list_system');
+     define('DB_USER', 'seu_usuario');
+     define('DB_PASS', 'sua_senha');
+     ```
+   - Ajuste `config/config.php` com a URL base do sistema:
+     ```php
+     define('BASE_URL', 'http://seu-servidor/todo-list/');
+     ```
 
-4. Certifique-se de que os diretórios `uploads/` e `temp/` tenham permissões de escrita:
-   ```
+4. **Configure permissões**
+   ```bash
    chmod 755 uploads/ temp/
    ```
 
-5. Acesse a URL `http://seu-servidor/todo-list/install.php` para criar as tabelas e o usuário administrador inicial.
+5. **Execute o instalador**
+   - Acesse `http://seu-servidor/todo-list/install.php`
+   - Siga o assistente para criar as tabelas e usuário administrador
 
-6. Após a instalação bem-sucedida, remova o arquivo `install.php` por segurança.
+6. **Finalize a instalação**
+   - Após instalação bem-sucedida, remova o arquivo `install.php`
+   - Recomendado: Configure seu servidor web para impedir acesso direto a diretórios sensíveis
 
-## Uso
+## 📝 Uso
 
-1. Acesse o sistema através da URL: `http://seu-servidor/todo-list/`
-2. Faça login com o usuário administrador criado durante a instalação (padrão: admin/admin123)
-3. Comece a criar e gerenciar suas tarefas!
+1. **Acesse o sistema**
+   - URL: `http://seu-servidor/todo-list/`
 
-## Segurança
+2. **Efetue login**
+   - Usuário padrão: `admin`
+   - Senha padrão: `admin123`
 
-- Todas as consultas SQL utilizam prepared statements para prevenir injeção SQL
-- Senhas armazenadas com hash usando password_hash() e bcrypt
-- Proteção contra CSRF em formulários
-- Validação de dados no lado do servidor
-- Sanitização de entrada e saída
-- Controle de acesso baseado em sessão
+3. **Comece a gerenciar suas tarefas**
+   - Crie novas tarefas
+   - Organize por prioridade e status
+   - Filtre e pesquise para encontrar rapidamente
 
-## Desenvolvimento
+## 🔒 Segurança
 
-Para rodar o projeto em um ambiente de desenvolvimento:
+| Recurso | Implementação |
+|---------|---------------|
+| **Prepared Statements** | Todas as consultas SQL utilizam PDO com prepared statements |
+| **Hashing de Senhas** | Senhas armazenadas com `password_hash()` e bcrypt |
+| **Proteção CSRF** | Validação de tokens em formulários sensíveis |
+| **Validação de Dados** | Validação rigorosa tanto no cliente quanto no servidor |
+| **Sanitização** | Sanitização de entrada e saída para prevenir XSS |
+| **Controle de Acesso** | Verificação de sessão em todas as páginas protegidas |
+| **Segurança de Arquivos** | Restrição de acesso direto a diretórios via .htaccess |
 
-1. Instale o XAMPP, WAMP ou similar
-2. Configure a pasta do projeto no diretório web
-3. Ajuste as configurações de conexão no arquivo config.php para o ambiente local
+## 💻 Desenvolvimento
 
-## Licença
+### Configuração do Ambiente de Desenvolvimento
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+1. **Instale um servidor local**
+   - Recomendado: XAMPP, WAMP, MAMP ou Docker
 
-## Autor
+2. **Configure o ambiente**
+   ```php
+   // config/config.php
+   define('IS_DEVELOPMENT', true);
+   ```
 
-Seu Nome - [seu-email@example.com](mailto:seu-email@example.com)
+3. **Habilite mensagens de erro durante o desenvolvimento**
+   ```php
+   ini_set('display_errors', 1);
+   error_reporting(E_ALL);
+   ```
+
+### Boas Práticas de Codificação
+
+- Siga o padrão PSR-4 para autoloading de classes
+- Documente todas as funções e métodos com PHPDoc
+- Mantenha separação clara entre lógica e apresentação
+- Use constantes para valores fixos em todo o sistema
+
+## 📄 Licença
+
+Este projeto está licenciado sob a [Licença MIT](LICENSE) - veja o arquivo LICENSE para detalhes.
+
+## 👤 Autor
+
+**Seu Nome**
+- Email: [seu-email@example.com](mailto:seu-email@example.com)
+- GitHub: [seu-usuario](https://github.com/seu-usuario)
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Made_with-❤️-red?style=for-the-badge" alt="Made with love"/>
+</p>
