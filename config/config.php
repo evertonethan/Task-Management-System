@@ -9,15 +9,25 @@ define('APP_VERSION', '1.0.0');
 // Configuração de Ambiente (altere para false em produção)
 define('IS_DEVELOPMENT', true);
 
-// Configurações da Base URL
-$base_path = '/Task-Management-System/'; // Altere para o seu caminho base
+// Obter o path base da URL atual
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+$base_path = '/task-management-system/'; // Path base padrão
 
-// Define a URL base com base no ambiente
+// Detectar o diretório base dinamicamente (compatível com localhost e produção)
 if (IS_DEVELOPMENT) {
-    define('BASE_URL', 'http://localhost' . $base_path);
+    // Obter diretório base para desenvolvimento
+    $base_dir = dirname(dirname($_SERVER['SCRIPT_NAME']));
+    if ($base_dir != '/' && $base_dir != '\\') {
+        $base_path = $base_dir . '/';
+    }
+
+    define('BASE_URL', $protocol . $host . $base_path);
     define('API_URL', BASE_URL . 'api/');
 } else {
-    define('BASE_URL', 'https://seudominio.com' . $base_path);
+    // URL para ambiente de produção
+    define('BASE_URL', 'https://tools.devfrontend.com.br/task-management-system/');
     define('API_URL', BASE_URL . 'api/');
 }
 

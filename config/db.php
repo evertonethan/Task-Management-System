@@ -10,10 +10,10 @@ if (!defined('IS_DEVELOPMENT')) {
 // Configurações para ambiente de produção vs desenvolvimento
 if (!IS_DEVELOPMENT) {
     // Produção
-    define('DB_HOST', 'seu-servidor-producao');
-    define('DB_NAME', 'seu_db_producao');
-    define('DB_USER', 'seu_usuario_producao');
-    define('DB_PASS', 'sua_senha_producao');
+    define('DB_HOST', 'localhost'); // Corrigido: o host deve ser 'localhost', não uma URL
+    define('DB_NAME', 'devfro86_todo_list_system');
+    define('DB_USER', 'devfro86_root');
+    define('DB_PASS', 'Emanuel2033**Messias');
 } else {
     // Desenvolvimento
     define('DB_HOST', 'localhost');
