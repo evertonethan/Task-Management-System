@@ -13,7 +13,7 @@ $pageTitle = 'Início';
 // Incluir cabeçalho
 require_once 'includes/header.php';
 ?>
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/index.css">
 
 <div class="landing-page">
     <div class="hero">
