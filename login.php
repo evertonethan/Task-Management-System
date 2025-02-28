@@ -14,6 +14,8 @@ $pageTitle = 'Login';
 require_once 'includes/header.php';
 ?>
 
+<link rel="stylesheet" href="css/login.css">
+
 <div class="auth-container">
     <div class="auth-card">
         <h2>Login</h2>
