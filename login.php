@@ -14,8 +14,6 @@ $pageTitle = 'Login';
 require_once 'includes/header.php';
 ?>
 
-<link rel="stylesheet" href="assets/css/style.css">
-
 <div class="auth-container">
     <div class="auth-card">
         <h2>Login</h2>
@@ -40,6 +38,7 @@ require_once 'includes/header.php';
 
         <div class="auth-links">
             <p>Não tem uma conta? <a href="register.php">Cadastre-se</a></p>
+            <p><small>Problemas para fazer login? <a href="login-simple.php">Tente a versão simplificada</a></small></p>
         </div>
     </div>
 </div>
@@ -64,7 +63,8 @@ require_once 'includes/header.php';
             // Dados para enviar
             const data = {
                 username: username,
-                password: password
+                password: password,
+                action: 'login' // Incluir action diretamente no objeto JSON
             };
 
             // Enviar requisição
@@ -82,6 +82,33 @@ require_once 'includes/header.php';
                             throw new Error('Erro de conexão com o servidor');
                         } else if (response.status === 404) {
                             throw new Error('API não encontrada. Verifique a configuração de API_URL');
+                        } else if (response.status === 405) {
+                            // Tentar novamente com método GET como fallback
+                            console.warn('Método POST não permitido. Tentando com GET...');
+                            const queryParams = new URLSearchParams({
+                                action: 'login',
+                                username: data.username,
+                                password: data.password
+                            });
+                            return fetch(API_URL + 'auth.php?' + queryParams, {
+                                method: 'GET',
+                                credentials: 'include'
+                            });
+                        } else if (response.status === 400) {
+                            // Tentar diferentes formatos se o 400 ocorrer
+                            console.warn('Erro 400. Tentando com formato diferente...');
+
+                            // Tentativa 1: Usar FormData
+                            const formData = new FormData();
+                            formData.append('username', data.username);
+                            formData.append('password', data.password);
+                            formData.append('action', 'login');
+
+                            return fetch(API_URL + 'auth.php', {
+                                method: 'POST',
+                                body: formData,
+                                credentials: 'include'
+                            });
                         } else {
                             throw new Error('Erro de servidor: ' + response.status);
                         }
@@ -92,7 +119,12 @@ require_once 'includes/header.php';
                     if (data.success) {
                         showMessage('Login realizado com sucesso! Redirecionando...', 'success');
                         setTimeout(() => {
-                            window.location.href = BASE_URL + 'tasks.php';
+                            // Usar cleanUrl para evitar barras duplas e #
+                            if (typeof cleanUrl === 'function') {
+                                window.location.href = cleanUrl(BASE_URL + 'tasks.php');
+                            } else {
+                                window.location.href = BASE_URL + 'tasks.php';
+                            }
                         }, 1000);
                     } else {
                         showMessage(data.error || 'Erro ao fazer login', 'error');
@@ -106,6 +138,14 @@ require_once 'includes/header.php';
                         error.message.includes('NetworkError') ||
                         error.message.includes('conexão')) {
                         showMessage('Erro ao conectar com o servidor. Verifique sua conexão de internet ou contate o administrador.', 'error');
+
+                        // Adicionar botão de diagnóstico
+                        messageDiv.innerHTML += '<br><br><button id="debug-btn" class="btn btn-secondary">Diagnosticar Problema</button>';
+
+                        document.getElementById('debug-btn').addEventListener('click', function() {
+                            // Abrir a página de debug em nova aba
+                            window.open(API_URL + 'debug.php', '_blank');
+                        });
                     } else {
                         showMessage(error.message || 'Erro ao processar sua solicitação', 'error');
                     }
@@ -113,13 +153,22 @@ require_once 'includes/header.php';
         });
 
         function showMessage(message, type) {
-            messageDiv.textContent = message;
+            messageDiv.innerHTML = message;
             messageDiv.className = 'message message-' + type;
 
-            setTimeout(() => {
-                messageDiv.textContent = '';
-                messageDiv.className = '';
-            }, 5000);
+            // Rolar até a mensagem
+            messageDiv.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            // Não limpe a mensagem de erro automaticamente
+            if (type !== 'error') {
+                setTimeout(() => {
+                    messageDiv.textContent = '';
+                    messageDiv.className = '';
+                }, 5000);
+            }
         }
     });
 </script>

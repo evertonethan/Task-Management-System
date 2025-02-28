@@ -12,54 +12,86 @@ class User
     // Registrar um novo usuário
     public function register($username, $email, $password)
     {
-        // Verificar se o usuário já existe
-        $user = $this->findByUsername($username);
-        if ($user) {
-            throw new Exception("Nome de usuário já está sendo utilizado.");
-        }
-
-        // Verificar se o email já existe
-        $user = $this->findByEmail($email);
-        if ($user) {
-            throw new Exception("E-mail já está sendo utilizado.");
-        }
-
-        // Hash da senha
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        // Inserir usuário
-        $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
-        $params = [
-            ':username' => $username,
-            ':email' => $email,
-            ':password' => $hashedPassword
-        ];
+        // Registro de depuração
+        error_log("Iniciando registro de usuário: $username / $email");
 
         try {
-            $userId = $this->db->insert($sql, $params);
-            return $userId;
+            // Verificar se o usuário já existe
+            $user = $this->findByUsername($username);
+            if ($user) {
+                error_log("Erro de registro: Nome de usuário '$username' já existe");
+                throw new Exception("Nome de usuário já está sendo utilizado.");
+            }
+
+            // Verificar se o email já existe
+            $user = $this->findByEmail($email);
+            if ($user) {
+                error_log("Erro de registro: Email '$email' já existe");
+                throw new Exception("E-mail já está sendo utilizado.");
+            }
+
+            // Hash da senha
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            error_log("Senha hash criada para usuário: $username");
+
+            // Inserir usuário
+            $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
+            $params = [
+                ':username' => $username,
+                ':email' => $email,
+                ':password' => $hashedPassword
+            ];
+
+            try {
+                $userId = $this->db->insert($sql, $params);
+                error_log("Usuário registrado com sucesso: $username (ID: $userId)");
+                return $userId;
+            } catch (Exception $e) {
+                error_log("Erro ao inserir usuário no banco: " . $e->getMessage());
+                throw new Exception("Erro ao registrar usuário: " . $e->getMessage());
+            }
         } catch (Exception $e) {
-            throw new Exception("Erro ao registrar usuário: " . $e->getMessage());
+            error_log("Exceção capturada no método register: " . $e->getMessage());
+            throw $e; // Repassar a exceção
         }
     }
 
     // Autenticar usuário
     public function login($username, $password)
     {
+        // Depuração
+        error_log("User->login: Tentando login para usuário: $username");
+
         $sql = "SELECT * FROM users WHERE username = :username";
         $params = [':username' => $username];
 
-        $user = $this->db->fetchOne($sql, $params);
+        try {
+            $user = $this->db->fetchOne($sql, $params);
 
-        if (!$user) {
-            return false;
+            // Depuração
+            error_log("User->login: Usuário encontrado: " . ($user ? "sim" : "não"));
+
+            if (!$user) {
+                error_log("User->login: Usuário não encontrado: $username");
+                return false;
+            }
+
+            // Depuração - verificar hash da senha (sem expor a senha real)
+            error_log("User->login: Comparando senhas para usuário: $username");
+            error_log("User->login: Hash armazenado para usuário: " . substr($user['password'], 0, 10) . "...");
+
+            // Verificar a senha
+            if (password_verify($password, $user['password'])) {
+                error_log("User->login: Senha verificada com sucesso para: $username");
+                return $user;
+            } else {
+                error_log("User->login: Senha incorreta para: $username");
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("User->login: Erro ao tentar login: " . $e->getMessage());
+            throw new Exception("Erro ao verificar usuário: " . $e->getMessage());
         }
-
-        if (password_verify($password, $user['password'])) {
-            return $user;
-        }
-
-        return false;
     }
 
     // Buscar usuário por ID

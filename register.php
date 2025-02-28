@@ -14,9 +14,6 @@ $pageTitle = 'Cadastro';
 require_once 'includes/header.php';
 ?>
 
-
-<link rel="stylesheet" href="assets/css/style.css">
-
 <div class="auth-container">
     <div class="auth-card">
         <h2>Cadastro</h2>
@@ -70,18 +67,18 @@ require_once 'includes/header.php';
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
 
-            // Validação básica
-            if (!username || !email || !password || !confirmPassword) {
-                showMessage('Preencha todos os campos', 'error');
-                return;
-            }
-
-            if (username.length < 3) {
+            // Validar dados do formulário e garantir que sejam enviados corretamente
+            if (!username || username.trim().length < 3) {
                 showMessage('O nome de usuário deve ter pelo menos 3 caracteres', 'error');
                 return;
             }
 
-            if (password.length < 6) {
+            if (!email || !emailRegex.test(email)) {
+                showMessage('Digite um e-mail válido', 'error');
+                return;
+            }
+
+            if (!password || password.length < 6) {
                 showMessage('A senha deve ter pelo menos 6 caracteres', 'error');
                 return;
             }
@@ -91,19 +88,21 @@ require_once 'includes/header.php';
                 return;
             }
 
-            // Validação de email com regex simples
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showMessage('Digite um e-mail válido', 'error');
-                return;
-            }
+            // Mostrar mensagem de carregamento
+            showMessage('Processando registro...', 'info');
 
-            // Dados para enviar
+            // Dados para enviar - certificando-se de que todos os campos estão presentes
             const data = {
-                username: username,
-                email: email,
-                password: password
+                username: username.trim(),
+                email: email.trim(),
+                password: password,
+                action: 'register' // Incluir action diretamente no objeto JSON
             };
+
+            console.log('Enviando dados de registro:', {
+                ...data,
+                password: '***'
+            });
 
             // Enviar requisição
             fetch(API_URL + 'auth.php?action=register', {
@@ -120,6 +119,19 @@ require_once 'includes/header.php';
                             throw new Error('Erro de conexão com o servidor');
                         } else if (response.status === 404) {
                             throw new Error('API não encontrada. Verifique a configuração de API_URL');
+                        } else if (response.status === 405) {
+                            // Tentar novamente com método GET como fallback
+                            console.warn('Método POST não permitido. Tentando com GET...');
+                            const queryParams = new URLSearchParams({
+                                action: 'register',
+                                username: data.username,
+                                email: data.email,
+                                password: data.password
+                            });
+                            return fetch(API_URL + 'auth.php?' + queryParams, {
+                                method: 'GET',
+                                credentials: 'include'
+                            });
                         } else {
                             throw new Error('Erro de servidor: ' + response.status);
                         }
@@ -130,7 +142,12 @@ require_once 'includes/header.php';
                     if (data.success) {
                         showMessage('Cadastro realizado com sucesso! Redirecionando...', 'success');
                         setTimeout(() => {
-                            window.location.href = BASE_URL + 'tasks.php';
+                            // Usar cleanUrl para evitar barras duplas e #
+                            if (typeof cleanUrl === 'function') {
+                                window.location.href = cleanUrl(BASE_URL + 'tasks.php');
+                            } else {
+                                window.location.href = BASE_URL + 'tasks.php';
+                            }
                         }, 1500);
                     } else {
                         showMessage(data.error || 'Erro ao realizar cadastro', 'error');
@@ -151,13 +168,22 @@ require_once 'includes/header.php';
         });
 
         function showMessage(message, type) {
-            messageDiv.textContent = message;
+            messageDiv.innerHTML = message;
             messageDiv.className = 'message message-' + type;
 
-            setTimeout(() => {
-                messageDiv.textContent = '';
-                messageDiv.className = '';
-            }, 5000);
+            // Rolar até a mensagem
+            messageDiv.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            // Não limpe a mensagem de erro automaticamente
+            if (type !== 'error') {
+                setTimeout(() => {
+                    messageDiv.textContent = '';
+                    messageDiv.className = '';
+                }, 5000);
+            }
         }
     });
 </script>

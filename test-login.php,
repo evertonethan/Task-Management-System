@@ -1,0 +1,316 @@
+<?php
+// test-login.php - Script para testar login diretamente sem envolver a API
+// IMPORTANTE: Este arquivo deve ser REMOVIDO em produção, pois é apenas para diagnóstico!
+
+// Definir cabeçalhos
+header('Content-Type: text/html; charset=utf-8');
+
+// Iniciar saída buffer para logs
+ob_start();
+
+// Incluir arquivos necessários
+require_once 'config/config.php';
+require_once 'classes/Database.php';
+require_once 'classes/User.php';
+
+// Criar instância do usuário
+$user = new User();
+
+// Resultado do teste
+$testResult = array(
+    'config_loaded' => true,
+    'database_connection' => false,
+    'user_table_exists' => false,
+    'test_user_exists' => false,
+    'login_test' => false,
+    'login_message' => '',
+    'errors' => []
+);
+
+try {
+    // Testar conexão com banco de dados
+    $db = Database::getInstance();
+    $dbConn = $db->getConnection();
+    $testResult['database_connection'] = true;
+    
+    // Verificar se a tabela users existe
+    $stmt = $dbConn->query("SHOW TABLES LIKE 'users'");
+    $testResult['user_table_exists'] = $stmt->rowCount() > 0;
+    
+    // Verificar se o usuário de teste existe
+    if ($testResult['user_table_exists']) {
+        $stmt = $dbConn->prepare("SELECT * FROM users WHERE username = 'usuario_teste'");
+        $stmt->execute();
+        $testUser = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($testUser) {
+            $testResult['test_user_exists'] = true;
+            
+            // Testar login com credenciais padrão (senha: teste123)
+            try {
+                $loginResult = $user->login('usuario_teste', 'teste123');
+                if ($loginResult) {
+                    $testResult['login_test'] = true;
+                    $testResult['login_message'] = 'Login bem-sucedido para usuário de teste';
+                } else {
+                    $testResult['login_message'] = 'Falha no login - senha incorreta';
+                }
+            } catch (Exception $e) {
+                $testResult['login_message'] = 'Erro ao tentar login: ' . $e->getMessage();
+                $testResult['errors'][] = $e->getMessage();
+            }
+            
+            // Mostrar hash da senha armazenada para ajudar no diagnóstico
+            $testResult['password_hash_preview'] = substr($testUser['password'], 0, 10) . '...';
+            
+            // Verificar o algoritmo de hash usado
+            $testResult['password_hash_info'] = password_get_info($testUser['password']);
+            
+            // Testar verificação da senha diretamente
+            $testResult['password_verify_test'] = password_verify('teste123', $testUser['password']);
+        } else {
+            $testResult['login_message'] = 'Usuário de teste não encontrado';
+        }
+    }
+} catch (Exception $e) {
+    $testResult['errors'][] = $e->getMessage();
+}
+
+// Obter logs de saída
+$logs = ob_get_clean();
+
+// Exibir resultados formatados
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .test-form {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Login</h1>
+    <p><strong>AVISO:</strong> Este arquivo é apenas para diagnóstico e deve ser removido em produção!</p>
+    
+    <h2>Resultados do Teste Automático</h2>
+    <table>
+        <tr>
+            <th>Teste</th>
+            <th>Resultado</th>
+        </tr>
+        <tr>
+            <td>Configuração Carregada</td>
+            <td class="<?php echo $testResult['config_loaded'] ? 'success' : 'error'; ?>">
+                <?php echo $testResult['config_loaded'] ? 'Sim' : 'Não'; ?>
+            </td>
+        </tr>
+        <tr>
+            <td>Conexão com Banco de Dados</td>
+            <td class="<?php echo $testResult['database_connection'] ? 'success' : 'error'; ?>">
+                <?php echo $testResult['database_connection'] ? 'Conectado' : 'Falhou'; ?>
+            </td>
+        </tr>
+        <tr>
+            <td>Tabela Users Existe</td>
+            <td class="<?php echo $testResult['user_table_exists'] ? 'success' : 'error'; ?>">
+                <?php echo $testResult['user_table_exists'] ? 'Sim' : 'Não'; ?>
+            </td>
+        </tr>
+        <tr>
+            <td>Usuário de Teste Existe</td>
+            <td class="<?php echo $testResult['test_user_exists'] ? 'success' : 'error'; ?>">
+                <?php echo $testResult['test_user_exists'] ? 'Sim' : 'Não'; ?>
+            </td>
+        </tr>
+        <?php if ($testResult['test_user_exists']): ?>
+        <tr>
+            <td>Hash da Senha (primeiros dígitos)</td>
+            <td><?php echo $testResult['password_hash_preview']; ?></td>
+        </tr>
+        <tr>
+            <td>Algoritmo de Hash</td>
+            <td><?php echo $testResult['password_hash_info']['algoName']; ?></td>
+        </tr>
+        <tr>
+            <td>Verificação Direta da Senha</td>
+            <td class="<?php echo $testResult['password_verify_test'] ? 'success' : 'error'; ?>">
+                <?php echo $testResult['password_verify_test'] ? 'Sucesso' : 'Falha'; ?>
+            </td>
+        </tr>
+        <?php endif; ?>
+        <tr>
+            <td>Teste de Login (usuario_teste/teste123)</td>
+            <td class="<?php echo $testResult['login_test'] ? 'success' : 'error'; ?>">
+                <?php echo $testResult['login_message']; ?>
+            </td>
+        </tr>
+    </table>
+    
+    <?php if (!empty($testResult['errors'])): ?>
+    <h2>Erros Encontrados</h2>
+    <ul>
+        <?php foreach ($testResult['errors'] as $error): ?>
+        <li class="error"><?php echo htmlspecialchars($error); ?></li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+    
+    <h2>Teste Manual de Login</h2>
+    <div class="test-form">
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Usuário:</label>
+                <input type="text" id="username" name="username" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : 'usuario_teste'; ?>" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" value="<?php echo isset($_POST['password']) ? htmlspecialchars($_POST['password']) : 'teste123'; ?>" required>
+            </div>
+            
+            <button type="submit" name="test_login">Testar Login</button>
+        </form>
+        
+        <?php
+        // Processar teste manual
+        if (isset($_POST['test_login'])) {
+            $testUsername = $_POST['username'];
+            $testPassword = $_POST['password'];
+            
+            try {
+                $manualTestResult = $user->login($testUsername, $testPassword);
+                
+                if ($manualTestResult) {
+                    echo '<div class="success" style="margin-top: 15px;">Login manual bem-sucedido!</div>';
+                    echo '<pre>' . htmlspecialchars(print_r($manualTestResult, true)) . '</pre>';
+                } else {
+                    echo '<div class="error" style="margin-top: 15px;">Falha no login manual. Usuário ou senha incorretos.</div>';
+                }
+            } catch (Exception $e) {
+                echo '<div class="error" style="margin-top: 15px;">Erro durante o teste manual: ' . htmlspecialchars($e->getMessage()) . '</div>';
+            }
+        }
+        ?>
+    </div>
+    
+    <h2>Informações do Sistema</h2>
+    <table>
+        <tr>
+            <td>PHP Version</td>
+            <td><?php echo phpversion(); ?></td>
+        </tr>
+        <tr>
+            <td>PDO Enabled</td>
+            <td><?php echo extension_loaded('pdo') ? 'Yes' : 'No'; ?></td>
+        </tr>
+        <tr>
+            <td>PDO MySQL Enabled</td>
+            <td><?php echo extension_loaded('pdo_mysql') ? 'Yes' : 'No'; ?></td>
+        </tr>
+        <tr>
+            <td>Sessions Enabled</td>
+            <td><?php echo function_exists('session_start') ? 'Yes' : 'No'; ?></td>
+        </tr>
+        <tr>
+            <td>Server Software</td>
+            <td><?php echo $_SERVER['SERVER_SOFTWARE']; ?></td>
+        </tr>
+        <tr>
+            <td>Document Root</td>
+            <td><?php echo $_SERVER['DOCUMENT_ROOT']; ?></td>
+        </tr>
+        <tr>
+            <td>BASE_URL</td>
+            <td><?php echo defined('BASE_URL') ? BASE_URL : 'Not defined'; ?></td>
+        </tr>
+        <tr>
+            <td>API_URL</td>
+            <td><?php echo defined('API_URL') ? API_URL : 'Not defined'; ?></td>
+        </tr>
+    </table>
+    
+    <?php if (!empty($logs)): ?>
+    <h2>Logs de Saída</h2>
+    <pre><?php echo htmlspecialchars($logs); ?></pre>
+    <?php endif; ?>
+</body>
+</html>

@@ -1,7 +1,35 @@
 // assets/js/main.js
 
 // Funções utilitárias gerais para o sistema
+// Função para prevenção do problema de rotas duplas e #
+function cleanUrl(url) {
+    // Remover qualquer # do final
+    url = url.replace(/#$/, '');
+    
+    // Corrigir barras duplas (exceto após protocolo)
+    url = url.replace(/(https?:\/\/)|(\/)+/g, "$1$2");
+    
+    return url;
+}
+
+// Adicionar método para todos os links e botões de navegação
 document.addEventListener('DOMContentLoaded', function() {
+    // Interceptar todos os links para corrigir URLs
+    document.querySelectorAll('a[href]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            
+            // Ignorar links externos, âncoras puras e javascript:
+            if (href.includes('://') || href.startsWith('#') || href.startsWith('javascript:')) {
+                return;
+            }
+            
+            e.preventDefault();
+            const cleanedUrl = cleanUrl(href);
+            window.location.href = cleanedUrl;
+        });
+    });
+    
     // Logout
     const logoutBtn = document.getElementById('logout-btn');
     
@@ -9,27 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            fetch(API_URL + 'auth.php?action=logout', {
-                method: 'POST',
-                credentials: 'include'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Resposta do servidor não foi ok: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    window.location.href = BASE_URL + 'login.php';
-                } else {
-                    showNotification('Não foi possível fazer logout: ' + (data.error || 'Erro desconhecido'), 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao fazer logout:', error);
-                showNotification('Erro ao conectar com o servidor. Verifique sua conexão de internet.', 'error');
-            });
+            // Redirecionar para a página de logout
+            window.location.href = cleanUrl(BASE_URL + 'logout.php');
         });
     }
     

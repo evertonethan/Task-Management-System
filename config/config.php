@@ -1,6 +1,15 @@
 <?php
 // config/config.php
-session_start();
+
+// Configurações de sessão
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 0); // Alterar para 1 em produção com HTTPS
+
+// Iniciar sessão se ainda não estiver ativa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Configurações gerais
 define('APP_NAME', 'Sistema de Gestão de Tarefas');
@@ -27,8 +36,14 @@ if (!IS_PRODUCTION) {
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
 $host = $_SERVER['HTTP_HOST'];
 $path = dirname($_SERVER['PHP_SELF']);
-$path = rtrim($path, '/') . '/';
-$auto_base_url = $protocol . $host . $path;
+
+// Corrigir problema de caminhos com barras duplas
+$path = trim($path, '/');
+if (!empty($path)) {
+    $path = '/' . $path;
+}
+
+$auto_base_url = $protocol . $host . $path . '/';
 
 // URLs base (com detecção automática como backup)
 if (IS_PRODUCTION) {
@@ -49,7 +64,20 @@ define('CSRF_TOKEN_SECRET', 'SeuTokenSecretoAqui123!@#');
 // Funções úteis
 function redirect($path)
 {
-    header('Location: ' . BASE_URL . $path);
+    // Remover barras iniciais para evitar URLs mal formadas
+    $path = ltrim($path, '/');
+
+    // Construir URL completa
+    $url = BASE_URL . $path;
+
+    // Garantir que não haja barras duplas
+    $url = str_replace('//', '/', $url);
+
+    // Restaurar protocolo caso tenha sido afetado
+    $url = preg_replace('|^http:/|', 'http://', $url);
+    $url = preg_replace('|^https:/|', 'https://', $url);
+
+    header('Location: ' . $url);
     exit;
 }
 

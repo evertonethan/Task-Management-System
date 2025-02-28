@@ -6,6 +6,18 @@ RewriteEngine On
 # Definir diretório base
 RewriteBase /todo-list/
 
+# Redirecionar URLs com barras duplas para uma única barra
+RewriteCond %{THE_REQUEST} //
+RewriteRule .* /$0 [R=301,L]
+
+# Remover # do final das URLs
+RewriteCond %{THE_REQUEST} \s(.*)#\s
+RewriteRule ^ %1 [R=301,L]
+
+# Remover index.php das URLs
+RewriteCond %{THE_REQUEST} /index\.php [NC]
+RewriteRule ^index\.php(.*)$ $1 [R=301,L]
+
 # Não aplicar regras a arquivos ou diretórios existentes
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

@@ -317,19 +317,35 @@ main {
 
 .message {
     margin-top: 1rem;
-    padding: 0.75rem;
+    padding: 1rem;
     border-radius: var(--border-radius);
     text-align: center;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .message-success {
     background-color: rgba(46, 204, 113, 0.2);
     color: #27ae60;
+    border-left: 4px solid #27ae60;
 }
 
 .message-error {
     background-color: rgba(231, 76, 60, 0.2);
     color: #c0392b;
+    border-left: 4px solid #c0392b;
+}
+
+.message-info {
+    background-color: rgba(52, 152, 219, 0.2);
+    color: #2980b9;
+    border-left: 4px solid #2980b9;
 }
 
 /* Tasks page */
@@ -646,6 +662,90 @@ main {
     color: #3498db;
 }
 
+/* Página de perfil */
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.card {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 1rem 1.5rem;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.profile-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray);
+}
+
+.profile-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.profile-section h3 {
+    margin-bottom: 1.25rem;
+    color: var(--text-color);
+    font-size: 1.25rem;
+}
+
+.form-static {
+    padding: 0.5rem;
+    background-color: var(--gray-light);
+    border-radius: var(--border-radius);
+}
+
+.form-actions {
+    margin-top: 1.5rem;
+}
+
+.stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.stat-item {
+    flex: 1;
+    min-width: 120px;
+    background-color: var(--gray-light);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--gray-dark);
+    font-size: 0.875rem;
+}
+
 /* Responsividade */
 @media screen and (max-width: 768px) {
     .header-content {
@@ -673,6 +773,14 @@ main {
     
     .search-group {
         width: 100%;
+    }
+    
+    .stats-container {
+        flex-direction: column;
+    }
+    
+    .stat-item {
+        min-width: 100%;
     }
 }
 
