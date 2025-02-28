@@ -22,11 +22,73 @@ $userData = $user->findById($_SESSION['user_id']);
 // Obter estatísticas de tarefas
 $taskStats = $task->countByStatus($_SESSION['user_id']);
 
+// Calcular a taxa de conclusão
+$completionRate = ($taskStats['total'] > 0) ? ($taskStats['concluido'] / $taskStats['total']) * 100 : 0;
+$completionRateFormatted = round($completionRate);
+
 // Definir título da página
 $pageTitle = 'Meu Perfil';
 
-// Incluir cabeçalho
-require_once 'includes/header.php';
+// Incluir cabeçalho (verifica se o arquivo existe)
+$header_file = 'includes/header.php';
+if (file_exists($header_file)) {
+    require_once $header_file;
+} else {
+    // Cabeçalho básico caso o arquivo não exista
+    echo '<!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>' . $pageTitle . ' - ' . APP_NAME . '</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <style>
+            :root {
+                --primary-color: #007bff;
+                --primary-color-dark: #0056b3;
+                --primary-color-rgb: 0, 123, 255;
+                --secondary-color: #6c757d;
+                --success-color: #28a745;
+                --danger-color: #dc3545;
+                --warning-color: #ffc107;
+                --info-color: #17a2b8;
+                --light-color: #f8f9fa;
+                --dark-color: #343a40;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f5f5f5;
+                color: #333;
+            }
+            .container {
+                width: 100%;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 15px;
+            }
+            .navbar {
+                background-color: var(--primary-color);
+                color: white;
+                padding: 1rem 0;
+            }
+            .navbar a {
+                color: white;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="' . BASE_URL . '">' . APP_NAME . '</a>
+            <div>
+                <a href="logout.php">Sair</a>
+            </div>
+        </div>
+    </nav>';
+}
 ?>
 
 <div class="profile-container">
@@ -37,7 +99,7 @@ require_once 'includes/header.php';
         <div class="profile-card user-info">
             <div class="card-header">
                 <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
-                <button id="edit-profile-btn" class="btn-icon">
+                <button id="edit-profile-btn" class="btn-icon" title="Editar perfil">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
@@ -125,21 +187,15 @@ require_once 'includes/header.php';
                         <div class="stat-label">Concluídas</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">
-                            <?php
-                            echo ($taskStats['total'] > 0)
-                                ? round(($taskStats['concluido'] / $taskStats['total']) * 100)
-                                : 0;
-                            ?>%
-                        </div>
+                        <div class="stat-value"><?php echo $completionRateFormatted; ?>%</div>
                         <div class="stat-label">Taxa de Conclusão</div>
                     </div>
                 </div>
 
                 <div class="progress-container">
-                    <div class="progress-label">Progresso Geral</div>
+                    <div class="progress-label" data-value="<?php echo $completionRateFormatted; ?>%">Progresso Geral</div>
                     <div class="progress">
-                        <div class="progress-bar" style="width: <?php echo ($taskStats['total'] > 0) ? ($taskStats['concluido'] / $taskStats['total']) * 100 : 0; ?>%"></div>
+                        <div class="progress-bar" style="width: <?php echo $completionRate; ?>%"></div>
                     </div>
                 </div>
             </div>
@@ -149,6 +205,10 @@ require_once 'includes/header.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Definir as constantes com base nos valores do PHP
+        const API_URL = '<?php echo API_URL; ?>';
+        const BASE_URL = '<?php echo BASE_URL; ?>';
+
         // Editar informações do perfil
         const editProfileBtn = document.getElementById('edit-profile-btn');
         const cancelEditProfileBtn = document.getElementById('cancel-edit-profile');
@@ -182,7 +242,8 @@ require_once 'includes/header.php';
             fetch(API_URL + 'profile.php', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         action: 'update_profile',
@@ -191,7 +252,12 @@ require_once 'includes/header.php';
                     }),
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Resposta da rede não foi ok: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         showMessage('Perfil atualizado com sucesso!', 'success');
@@ -204,8 +270,22 @@ require_once 'includes/header.php';
                     }
                 })
                 .catch(error => {
-                    showMessage('Erro ao conectar com o servidor.', 'error');
-                    console.error('Erro:', error);
+                    console.error('Erro detalhado:', error);
+
+                    // Verificar se a API existe
+                    fetch(API_URL + 'profile.php', {
+                            method: 'HEAD'
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                showMessage('Erro: API de perfil não encontrada. Verifique se o arquivo ' + API_URL + 'profile.php existe.', 'error');
+                            } else {
+                                showMessage('Erro ao conectar com o servidor. Verifique se a API está respondendo corretamente.', 'error');
+                            }
+                        })
+                        .catch(() => {
+                            showMessage('Erro ao conectar com a API. Verifique se o arquivo existe em: ' + API_URL + 'profile.php', 'error');
+                        });
                 });
         });
 
@@ -239,7 +319,8 @@ require_once 'includes/header.php';
             fetch(API_URL + 'profile.php', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         action: 'change_password',
@@ -248,7 +329,12 @@ require_once 'includes/header.php';
                     }),
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Resposta da rede não foi ok: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         showMessage('Senha alterada com sucesso!', 'success');
@@ -258,8 +344,8 @@ require_once 'includes/header.php';
                     }
                 })
                 .catch(error => {
+                    console.error('Erro detalhado:', error);
                     showMessage('Erro ao conectar com o servidor.', 'error');
-                    console.error('Erro:', error);
                 });
         });
 
@@ -294,118 +380,15 @@ require_once 'includes/header.php';
     });
 </script>
 
-<style>
-    .profile-container {
-        padding: 2rem 0;
-    }
-
-    .page-title {
-        margin-bottom: 2rem;
-    }
-
-    .profile-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-    }
-
-    .profile-card {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-    }
-
-    .card-header {
-        padding: 1.5rem;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .card-header h2 {
-        margin: 0;
-        font-size: 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    .info-group {
-        margin-bottom: 1rem;
-    }
-
-    .info-group label {
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-        color: var(--grey-color);
-    }
-
-    .info-group p {
-        margin: 0;
-    }
-
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .stat-item {
-        text-align: center;
-        padding: 1rem;
-        background-color: var(--light-color);
-        border-radius: 8px;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--primary-color);
-    }
-
-    .stat-label {
-        font-size: 0.9rem;
-        color: var(--grey-color);
-    }
-
-    .progress-container {
-        margin-top: 1.5rem;
-    }
-
-    .progress-label {
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-    }
-
-    .progress {
-        height: 10px;
-        background-color: var(--grey-light);
-        border-radius: 5px;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        height: 100%;
-        background-color: var(--primary-color);
-        transition: width 0.3s ease;
-    }
-
-    @media (max-width: 768px) {
-        .profile-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+<link rel="stylesheet" href="css/profile.css">
 
 <?php
-// Incluir rodapé
-require_once 'includes/footer.php';
+// Incluir rodapé (verifica se o arquivo existe)
+$footer_file = 'includes/footer.php';
+if (file_exists($footer_file)) {
+    require_once $footer_file;
+} else {
+    // Rodapé básico caso o arquivo não exista
+    echo '</body></html>';
+}
 ?>
