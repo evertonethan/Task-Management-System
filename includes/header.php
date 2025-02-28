@@ -71,30 +71,55 @@
                 </div> -->
 
                 <?php if (isLoggedIn()): ?>
-                    <nav aria-label="Navegação principal">
-                        <ul>
-                            <li><a href="<?php echo BASE_URL; ?>tasks.php" <?php echo (strpos($_SERVER['REQUEST_URI'], 'tasks.php') !== false) ? 'class="active"' : ''; ?>><i class="fas fa-tasks"></i> Minhas Tarefas</a></li>
-                            <li class="dropdown">
-                                <a href="#" aria-haspopup="true" aria-expanded="false">
+                    <nav class="main-nav" aria-label="Navegação principal">
+                        <ul class="nav-list">
+                            <li class="nav-item">
+                                <a href="<?php echo BASE_URL; ?>tasks.php"
+                                    <?php echo (strpos($_SERVER['REQUEST_URI'], 'tasks.php') !== false) ? 'class="active"' : ''; ?>>
+                                    <i class="fas fa-tasks"></i>
+                                    <span>Minhas Tarefas</span>
+                                </a>
+                            </li>
+                            <li class="nav-item user-dropdown">
+                                <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
                                     <div class="user-avatar">
-                                        <!-- Iniciais do usuário como fallback para avatar -->
-                                        <span><?php echo substr($_SESSION['username'], 0, 1); ?></span>
+                                        <?php if (isset($_SESSION['user_avatar']) && !empty($_SESSION['user_avatar'])): ?>
+                                            <img src="<?php echo BASE_URL; ?>uploads/avatars/<?php echo $_SESSION['user_avatar']; ?>" alt="Avatar do usuário">
+                                        <?php else: ?>
+                                            <span class="avatar-initials"><?php echo substr($_SESSION['username'], 0, 1); ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <span class="username"><?php echo $_SESSION['username']; ?></span>
-                                    <i class="fas fa-caret-down"></i>
-                                </a>
+                                    <i class="fas fa-caret-down" aria-hidden="true"></i>
+                                </button>
                                 <ul class="dropdown-menu" aria-label="Submenu de usuário">
-                                    <li><a href="<?php echo BASE_URL; ?>profile.php"><i class="fas fa-user-cog"></i> Perfil</a></li>
-                                    <li><a href="<?php echo BASE_URL; ?>logout.php" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                                    <li class="dropdown-item">
+                                        <a href="<?php echo BASE_URL; ?>profile.php">
+                                            <i class="fas fa-user-cog"></i> Perfil
+                                        </a>
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <a href="<?php echo BASE_URL; ?>logout.php" id="logout-btn">
+                                            <i class="fas fa-sign-out-alt"></i> Sair
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         </ul>
                     </nav>
                 <?php else: ?>
-                    <nav aria-label="Navegação principal">
+                    <nav class="main-nav" aria-label="Navegação principal">
                         <ul class="auth-buttons">
-                            <li><a href="<?php echo BASE_URL; ?>login.php" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Entrar</a></li>
-                            <li><a href="<?php echo BASE_URL; ?>register.php" class="btn btn-primary"><i class="fas fa-user-plus"></i> Cadastrar</a></li>
+                            <li class="nav-item">
+                                <a href="<?php echo BASE_URL; ?>login.php" class="btn btn-outline">
+                                    <i class="fas fa-sign-in-alt"></i> Entrar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?php echo BASE_URL; ?>register.php" class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Cadastrar
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 <?php endif; ?>

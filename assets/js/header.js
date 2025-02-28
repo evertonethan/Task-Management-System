@@ -153,3 +153,75 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Gerenciamento do dropdown de usuário
+    const userDropdown = document.querySelector('.user-dropdown');
+    if (userDropdown) {
+        const dropdownToggle = userDropdown.querySelector('.dropdown-toggle');
+        
+        // Toggle dropdown ao clicar
+        dropdownToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            userDropdown.classList.toggle('active');
+            
+            // Atualiza atributo aria-expanded
+            const isExpanded = userDropdown.classList.contains('active');
+            dropdownToggle.setAttribute('aria-expanded', isExpanded);
+        });
+        
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+                dropdownToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Suporte a navegação por teclado
+        dropdownToggle.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                dropdownToggle.click();
+            }
+        });
+        
+        // Fechar dropdown com Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && userDropdown.classList.contains('active')) {
+                userDropdown.classList.remove('active');
+                dropdownToggle.setAttribute('aria-expanded', 'false');
+                dropdownToggle.focus();
+            }
+        });
+    }
+    
+    // Confirmação de logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (confirm('Tem certeza que deseja sair?')) {
+                window.location.href = this.href;
+            }
+        });
+    }
+    
+    // Efeitos de feedback visual
+    const navLinks = document.querySelectorAll('.nav-item a, .dropdown-item a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            this.classList.add('clicked');
+            setTimeout(() => {
+                this.classList.remove('clicked');
+            }, 300);
+        });
+    });
+});
