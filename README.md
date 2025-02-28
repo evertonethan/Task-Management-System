@@ -102,7 +102,7 @@ todo-list/
 
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/seu-usuario/todo-list.git
+   git clone https://github.com/evertonethan/Task-Management-System.git
    cd todo-list
    ```
 
@@ -121,7 +121,7 @@ todo-list/
      ```
    - Ajuste `config/config.php` com a URL base do sistema:
      ```php
-     define('BASE_URL', 'http://seu-servidor/todo-list/');
+     define('BASE_URL', 'http://seu-servidor/Task-Management-System/');
      ```
 
 4. **Configure permissões**
@@ -130,7 +130,7 @@ todo-list/
    ```
 
 5. **Execute o instalador**
-   - Acesse `http://seu-servidor/todo-list/install.php`
+   - Acesse `http://seu-servidor/Task-Management-System/install.php`
    - Siga o assistente para criar as tabelas e usuário administrador
 
 6. **Finalize a instalação**
