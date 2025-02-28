@@ -1,8 +1,6 @@
--- todo_db.sql
--- Script para criação do banco de dados e tabelas
-
-CREATE DATABASE IF NOT EXISTS todo_db;
-USE todo_db;
+-- SQL para criar o banco de dados e tabelas
+CREATE DATABASE IF NOT EXISTS todo_list_system;
+USE todo_list_system;
 
 -- Tabela de usuários
 CREATE TABLE IF NOT EXISTS users (
@@ -26,6 +24,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Inserir um usuário de teste (senha: teste123)
-INSERT INTO users (username, email, password) 
-VALUES ('usuario_teste', 'teste@exemplo.com', '$2y$10$XIRyP.wIRyHLgNVs3mRSNOCuXo9xIeJCpX9x.vhkLW83JtgS2Ux9y');
+-- Índices para otimização de consultas
+CREATE INDEX idx_user_id ON tasks(user_id);
+CREATE INDEX idx_status ON tasks(status);
+CREATE INDEX idx_priority ON tasks(priority);

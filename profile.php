@@ -1,101 +1,26 @@
 <?php
 // profile.php
 require_once 'config/config.php';
+
+// Verificar se o usuário está logado
+if (!isLoggedIn()) {
+    redirect('login.php');
+}
+
+// Carregar classes necessárias
 require_once 'classes/Database.php';
 require_once 'classes/User.php';
+require_once 'classes/Task.php';
 
-// Verificar se o usuário está autenticado
-checkAuth();
-
-// Instanciar classe de usuário
-$userClass = new User();
-
-// Obter ID do usuário da sessão
-$userId = $_SESSION['user_id'];
-
-// Variáveis para mensagens de feedback
-$successMsg = '';
-$errorMsg = '';
-
-// Se o formulário foi enviado
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Verificar qual formulário foi enviado
-    if (isset($_POST['update_profile'])) {
-        // Atualização de perfil
-        $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS);
-        $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-
-        // Validar dados
-        if (empty($username) || empty($email)) {
-            $errorMsg = 'Todos os campos são obrigatórios';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errorMsg = 'E-mail inválido';
-        } else {
-            // Preparar dados para atualização
-            $data = [
-                'username' => $username,
-                'email' => $email
-            ];
-
-            try {
-                // Atualizar perfil
-                $result = $userClass->update($userId, $data);
-
-                if ($result) {
-                    $successMsg = 'Perfil atualizado com sucesso';
-                    // Atualizar username na sessão
-                    $_SESSION['username'] = $username;
-                } else {
-                    $errorMsg = 'Nenhuma alteração realizada ou erro ao atualizar perfil';
-                }
-            } catch (Exception $e) {
-                $errorMsg = $e->getMessage();
-            }
-        }
-    } elseif (isset($_POST['change_password'])) {
-        // Alteração de senha
-        $currentPassword = $_POST['current_password'];
-        $newPassword = $_POST['new_password'];
-        $confirmPassword = $_POST['confirm_password'];
-
-        // Validar dados
-        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
-            $errorMsg = 'Todos os campos são obrigatórios';
-        } elseif ($newPassword !== $confirmPassword) {
-            $errorMsg = 'As senhas não coincidem';
-        } elseif (strlen($newPassword) < 6) {
-            $errorMsg = 'A nova senha deve ter pelo menos 6 caracteres';
-        } else {
-            // Verificar senha atual
-            $user = $userClass->login($_SESSION['username'], $currentPassword);
-
-            if ($user) {
-                try {
-                    // Atualizar senha
-                    $result = $userClass->updatePassword($userId, $newPassword);
-
-                    if ($result) {
-                        $successMsg = 'Senha alterada com sucesso';
-                    } else {
-                        $errorMsg = 'Erro ao alterar senha';
-                    }
-                } catch (Exception $e) {
-                    $errorMsg = $e->getMessage();
-                }
-            } else {
-                $errorMsg = 'Senha atual incorreta';
-            }
-        }
-    }
-}
+// Instanciar classes
+$user = new User();
+$task = new Task();
 
 // Obter dados do usuário
-$user = $userClass->findById($userId);
+$userData = $user->findById($_SESSION['user_id']);
 
-// Verificar se o usuário existe
-if (!$user) {
-    redirect('logout.php');
-}
+// Obter estatísticas de tarefas
+$taskStats = $task->countByStatus($_SESSION['user_id']);
 
 // Definir título da página
 $pageTitle = 'Meu Perfil';
@@ -105,106 +30,116 @@ require_once 'includes/header.php';
 ?>
 
 <div class="profile-container">
-    <div class="card">
-        <div class="card-header">
-            <h2>Meu Perfil</h2>
-        </div>
+    <h1 class="page-title">Meu Perfil</h1>
 
-        <div class="card-body">
-            <?php if (!empty($successMsg)): ?>
-                <div class="alert alert-success"><?php echo $successMsg; ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($errorMsg)): ?>
-                <div class="alert alert-danger"><?php echo $errorMsg; ?></div>
-            <?php endif; ?>
-
-            <div class="profile-section">
-                <h3>Informações da Conta</h3>
-
-                <form method="post" action="" id="profile-form">
-                    <input type="hidden" name="update_profile" value="1">
-
+    <div class="profile-grid">
+        <!-- Informações do Usuário -->
+        <div class="profile-card user-info">
+            <div class="card-header">
+                <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
+                <button id="edit-profile-btn" class="btn-icon">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <form id="profile-form" style="display: none;">
                     <div class="form-group">
                         <label for="username">Nome de Usuário</label>
-                        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+                        <input type="text" id="username" name="username" class="form-control" value="<?php echo htmlspecialchars($userData['username']); ?>" required>
                     </div>
-
                     <div class="form-group">
                         <label for="email">E-mail</label>
-                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                        <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($userData['email']); ?>" required>
                     </div>
-
-                    <div class="form-group">
-                        <label>Data de Cadastro</label>
-                        <div class="form-static"><?php echo date('d/m/Y H:i', strtotime($user['created_at'])); ?></div>
-                    </div>
-
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <button type="button" id="cancel-edit-profile" class="btn btn-secondary">Cancelar</button>
                     </div>
                 </form>
-            </div>
 
-            <div class="profile-section">
-                <h3>Alterar Senha</h3>
-
-                <form method="post" action="" id="password-form">
-                    <input type="hidden" name="change_password" value="1">
-
-                    <div class="form-group">
-                        <label for="current_password">Senha Atual</label>
-                        <input type="password" id="current_password" name="current_password" required>
+                <div id="profile-info">
+                    <div class="info-group">
+                        <label>Nome de Usuário:</label>
+                        <p><?php echo htmlspecialchars($userData['username']); ?></p>
                     </div>
+                    <div class="info-group">
+                        <label>E-mail:</label>
+                        <p><?php echo htmlspecialchars($userData['email']); ?></p>
+                    </div>
+                    <div class="info-group">
+                        <label>Membro desde:</label>
+                        <p><?php echo date('d/m/Y', strtotime($userData['created_at'])); ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Alterar Senha -->
+        <div class="profile-card password-change">
+            <div class="card-header">
+                <h2><i class="fas fa-key"></i> Alterar Senha</h2>
+            </div>
+            <div class="card-body">
+                <form id="password-form">
                     <div class="form-group">
-                        <label for="new_password">Nova Senha</label>
-                        <input type="password" id="new_password" name="new_password" required>
+                        <label for="current-password">Senha Atual</label>
+                        <input type="password" id="current-password" name="current_password" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">Nova Senha</label>
+                        <input type="password" id="new-password" name="new_password" class="form-control" required>
                         <small>Mínimo de 6 caracteres</small>
                     </div>
-
                     <div class="form-group">
-                        <label for="confirm_password">Confirmar Nova Senha</label>
-                        <input type="password" id="confirm_password" name="confirm_password" required>
+                        <label for="confirm-password">Confirmar Nova Senha</label>
+                        <input type="password" id="confirm-password" name="confirm_password" class="form-control" required>
                     </div>
-
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Alterar Senha</button>
                     </div>
                 </form>
             </div>
+        </div>
 
-            <div class="profile-section">
-                <h3>Estatísticas</h3>
-
-                <div class="stats-container">
-                    <?php
-                    // Criar uma instância da classe Task
-                    require_once 'classes/Task.php';
-                    $taskClass = new Task();
-
-                    // Obter contagens
-                    $counts = $taskClass->countByStatus($userId);
-                    ?>
-
+        <!-- Estatísticas -->
+        <div class="profile-card statistics">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-bar"></i> Estatísticas</h2>
+            </div>
+            <div class="card-body">
+                <div class="stat-grid">
                     <div class="stat-item">
-                        <div class="stat-value"><?php echo $counts['total']; ?></div>
+                        <div class="stat-value"><?php echo $taskStats['total']; ?></div>
                         <div class="stat-label">Total de Tarefas</div>
                     </div>
-
                     <div class="stat-item">
-                        <div class="stat-value"><?php echo $counts['pendente']; ?></div>
+                        <div class="stat-value"><?php echo $taskStats['pendente']; ?></div>
                         <div class="stat-label">Pendentes</div>
                     </div>
-
                     <div class="stat-item">
-                        <div class="stat-value"><?php echo $counts['em_andamento']; ?></div>
+                        <div class="stat-value"><?php echo $taskStats['em_andamento']; ?></div>
                         <div class="stat-label">Em Andamento</div>
                     </div>
-
                     <div class="stat-item">
-                        <div class="stat-value"><?php echo $counts['concluido']; ?></div>
+                        <div class="stat-value"><?php echo $taskStats['concluido']; ?></div>
                         <div class="stat-label">Concluídas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <?php
+                            echo ($taskStats['total'] > 0)
+                                ? round(($taskStats['concluido'] / $taskStats['total']) * 100)
+                                : 0;
+                            ?>%
+                        </div>
+                        <div class="stat-label">Taxa de Conclusão</div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-label">Progresso Geral</div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: <?php echo ($taskStats['total'] > 0) ? ($taskStats['concluido'] / $taskStats['total']) * 100 : 0; ?>%"></div>
                     </div>
                 </div>
             </div>
@@ -214,46 +149,261 @@ require_once 'includes/header.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Editar informações do perfil
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const cancelEditProfileBtn = document.getElementById('cancel-edit-profile');
         const profileForm = document.getElementById('profile-form');
-        const passwordForm = document.getElementById('password-form');
+        const profileInfo = document.getElementById('profile-info');
 
-        // Validação do formulário de perfil
-        profileForm.addEventListener('submit', function(e) {
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-
-            if (!username || !email) {
-                e.preventDefault();
-                alert('Todos os campos são obrigatórios');
-            }
+        editProfileBtn.addEventListener('click', function() {
+            profileInfo.style.display = 'none';
+            profileForm.style.display = 'block';
         });
 
-        // Validação do formulário de senha
-        passwordForm.addEventListener('submit', function(e) {
-            const currentPassword = document.getElementById('current_password').value;
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
+        cancelEditProfileBtn.addEventListener('click', function() {
+            profileInfo.style.display = 'block';
+            profileForm.style.display = 'none';
+        });
 
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                e.preventDefault();
-                alert('Todos os campos são obrigatórios');
+        // Enviar formulário de perfil
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            // Validação simples
+            if (!username || !email) {
+                showMessage('Todos os campos são obrigatórios.', 'error');
                 return;
             }
 
-            if (newPassword !== confirmPassword) {
-                e.preventDefault();
-                alert('As senhas não coincidem');
+            // Enviar para a API
+            fetch(API_URL + 'profile.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'update_profile',
+                        username: username,
+                        email: email
+                    }),
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Perfil atualizado com sucesso!', 'success');
+                        // Atualizar exibição
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showMessage(data.error || 'Erro ao atualizar perfil.', 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('Erro ao conectar com o servidor.', 'error');
+                    console.error('Erro:', error);
+                });
+        });
+
+        // Enviar formulário de alteração de senha
+        const passwordForm = document.getElementById('password-form');
+
+        passwordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // Validação
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showMessage('Todos os campos são obrigatórios.', 'error');
                 return;
             }
 
             if (newPassword.length < 6) {
-                e.preventDefault();
-                alert('A nova senha deve ter pelo menos 6 caracteres');
+                showMessage('A nova senha deve ter pelo menos 6 caracteres.', 'error');
                 return;
             }
+
+            if (newPassword !== confirmPassword) {
+                showMessage('As senhas não coincidem.', 'error');
+                return;
+            }
+
+            // Enviar para a API
+            fetch(API_URL + 'profile.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'change_password',
+                        current_password: currentPassword,
+                        new_password: newPassword
+                    }),
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Senha alterada com sucesso!', 'success');
+                        passwordForm.reset();
+                    } else {
+                        showMessage(data.error || 'Erro ao alterar senha.', 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('Erro ao conectar com o servidor.', 'error');
+                    console.error('Erro:', error);
+                });
         });
+
+        // Função para exibir mensagens
+        function showMessage(message, type) {
+            // Verificar se já existe um elemento de mensagem
+            let messageElement = document.getElementById('message-container');
+
+            // Se não existir, criar um
+            if (!messageElement) {
+                messageElement = document.createElement('div');
+                messageElement.id = 'message-container';
+                document.body.appendChild(messageElement);
+            }
+
+            // Criar elemento da mensagem
+            const alert = document.createElement('div');
+            alert.className = `message message-${type}`;
+            alert.textContent = message;
+
+            // Adicionar ao container
+            messageElement.appendChild(alert);
+
+            // Remover após 5 segundos
+            setTimeout(() => {
+                alert.classList.add('fade-out');
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            }, 5000);
+        }
     });
 </script>
+
+<style>
+    .profile-container {
+        padding: 2rem 0;
+    }
+
+    .page-title {
+        margin-bottom: 2rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .profile-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .info-group {
+        margin-bottom: 1rem;
+    }
+
+    .info-group label {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+        color: var(--grey-color);
+    }
+
+    .info-group p {
+        margin: 0;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background-color: var(--light-color);
+        border-radius: 8px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--grey-color);
+    }
+
+    .progress-container {
+        margin-top: 1.5rem;
+    }
+
+    .progress-label {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .progress {
+        height: 10px;
+        background-color: var(--grey-light);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background-color: var(--primary-color);
+        transition: width 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 <?php
 // Incluir rodapé

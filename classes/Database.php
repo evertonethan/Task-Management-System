@@ -3,30 +3,42 @@
 class Database
 {
     private static $instance = null;
-    private $conn;
+    private $pdo;
 
+    // Construtor privado para Singleton
     private function __construct()
     {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-            $this->conn = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
-        } catch (PDOException $e) {
-            // Registrar erro para debug
-            error_log("Erro de conexão PDO: " . $e->getMessage());
-
-            // Exibir mensagem amigável (remover em produção para não expor detalhes)
-            if (defined('IS_PRODUCTION') && IS_PRODUCTION) {
-                die("Erro de conexão com o banco de dados. Por favor, tente novamente mais tarde.");
+            // Verificar se db.php foi incluído e DB_DSN está definido
+            if (defined('DB_DSN')) {
+                $dsn = DB_DSN;
             } else {
-                die("Erro de conexão com o banco de dados: " . $e->getMessage());
+                $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
             }
+
+            // Verificar se as opções foram definidas no arquivo de configuração
+            if (defined('DB_OPTIONS')) {
+                $options = unserialize(DB_OPTIONS);
+            } else {
+                $options = [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ];
+            }
+
+            // Adicionar comando init para charset e collation se não estiver presente
+            if (!isset($options[PDO::MYSQL_ATTR_INIT_COMMAND]) && defined('DB_COLLATION')) {
+                $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES " . DB_CHARSET . " COLLATE " . DB_COLLATION;
+            }
+
+            $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        } catch (PDOException $e) {
+            die('Erro na conexão com o banco de dados: ' . $e->getMessage());
         }
     }
 
-    // Prevenir clonagem do objeto (Singleton)
-    private function __clone() {}
-
-    // Método para obter a instância da conexão
+    // Método para obter a instância única do banco de dados
     public static function getInstance()
     {
         if (self::$instance === null) {
@@ -35,82 +47,92 @@ class Database
         return self::$instance;
     }
 
-    // Obter conexão PDO
-    public function getConnection()
+    // Getter para o objeto PDO
+    public function getPdo()
     {
-        return $this->conn;
+        return $this->pdo;
     }
 
-    // Método para executar queries com prepared statements
-    public function executeQuery($sql, $params = [])
+    /**
+     * Executa uma consulta com parâmetros
+     * 
+     * @param string $sql Consulta SQL
+     * @param array $params Parâmetros para a consulta
+     * @return PDOStatement
+     */
+    public function query($sql, $params = [])
     {
         try {
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
-            error_log("Erro na query: " . $e->getMessage());
-            throw new Exception("Ocorreu um erro ao executar a operação. Por favor, tente novamente.");
+            throw new Exception('Erro na consulta: ' . $e->getMessage());
         }
     }
 
-    // Inserir dados e retornar o ID
-    public function insert($sql, $params = [])
-    {
-        $this->executeQuery($sql, $params);
-        return $this->conn->lastInsertId();
-    }
-
-    // Atualizar dados e retornar número de linhas afetadas
-    public function update($sql, $params = [])
-    {
-        $stmt = $this->executeQuery($sql, $params);
-        return $stmt->rowCount();
-    }
-
-    // Deletar dados e retornar número de linhas afetadas
-    public function delete($sql, $params = [])
-    {
-        $stmt = $this->executeQuery($sql, $params);
-        return $stmt->rowCount();
-    }
-
-    // Buscar uma única linha
-    public function fetchOne($sql, $params = [])
-    {
-        $stmt = $this->executeQuery($sql, $params);
-        return $stmt->fetch();
-    }
-
-    // Buscar múltiplas linhas
+    /**
+     * Busca todos os resultados
+     * 
+     * @param string $sql Consulta SQL
+     * @param array $params Parâmetros para a consulta
+     * @return array
+     */
     public function fetchAll($sql, $params = [])
     {
-        $stmt = $this->executeQuery($sql, $params);
-        return $stmt->fetchAll();
+        return $this->query($sql, $params)->fetchAll();
     }
 
-    // Contar resultados
-    public function count($sql, $params = [])
+    /**
+     * Busca um único resultado
+     * 
+     * @param string $sql Consulta SQL
+     * @param array $params Parâmetros para a consulta
+     * @return array|false
+     */
+    public function fetchOne($sql, $params = [])
     {
-        $stmt = $this->executeQuery($sql, $params);
+        $stmt = $this->query($sql, $params);
+        $result = $stmt->fetch();
+        return $result !== false ? $result : false;
+    }
+
+    /**
+     * Executa uma inserção e retorna o ID inserido
+     * 
+     * @param string $sql Consulta SQL
+     * @param array $params Parâmetros para a consulta
+     * @return int
+     */
+    public function insert($sql, $params = [])
+    {
+        $this->query($sql, $params);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Executa uma atualização e retorna o número de linhas afetadas
+     * 
+     * @param string $sql Consulta SQL
+     * @param array $params Parâmetros para a consulta
+     * @return int
+     */
+    public function update($sql, $params = [])
+    {
+        $stmt = $this->query($sql, $params);
         return $stmt->rowCount();
     }
 
-    // Iniciar transação
-    public function beginTransaction()
+    /**
+     * Executa uma exclusão e retorna o número de linhas afetadas
+     * 
+     * @param string $sql Consulta SQL
+     * @param array $params Parâmetros para a consulta
+     * @return int
+     */
+    public function delete($sql, $params = [])
     {
-        return $this->conn->beginTransaction();
-    }
-
-    // Confirmar transação
-    public function commit()
-    {
-        return $this->conn->commit();
-    }
-
-    // Reverter transação
-    public function rollback()
-    {
-        return $this->conn->rollBack();
+        $stmt = $this->query($sql, $params);
+        return $stmt->rowCount();
     }
 }

@@ -1,55 +1,60 @@
 # .htaccess
-
-# Habilitar mod_rewrite
+# Habilitar o motor de reescrita
 RewriteEngine On
 
-# Definir diretório base
-RewriteBase /todo-list/
+# Definir diretório base (altere conforme necessário)
+RewriteBase /Task-Management-System/
 
-# Redirecionar URLs com barras duplas para uma única barra
-RewriteCond %{THE_REQUEST} //
-RewriteRule .* /$0 [R=301,L]
-
-# Remover # do final das URLs
-RewriteCond %{THE_REQUEST} \s(.*)#\s
-RewriteRule ^ %1 [R=301,L]
-
-# Remover index.php das URLs
-RewriteCond %{THE_REQUEST} /index\.php [NC]
-RewriteRule ^index\.php(.*)$ $1 [R=301,L]
-
-# Não aplicar regras a arquivos ou diretórios existentes
-RewriteCond %{REQUEST_FILENAME} !-f
+# Remover extensão .php
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^/]+)/?$ $1.php [L]
 
-# Remover extensão .php das URLs
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
-
-# Impedir listagem de diretórios
+# Impedir acesso direto aos diretórios
 Options -Indexes
+
+# Impedir acesso direto ao diretório includes
+RewriteRule ^includes/ - [F,L]
+
+# Impedir acesso direto ao diretório classes
+RewriteRule ^classes/ - [F,L]
+
+# Impedir acesso direto ao diretório config
+RewriteRule ^config/ - [F,L]
 
 # Definir página de erro 404
 ErrorDocument 404 /todo-list/404.php
 
 # Configurações de segurança
 <IfModule mod_headers.c>
-    # Prevenir ataques XSS (Cross-Site Scripting)
+    # Proteção XSS
     Header set X-XSS-Protection "1; mode=block"
-    
-    # Prevenir ataques de clickjacking
+    # Proteção Clickjacking
     Header set X-Frame-Options "SAMEORIGIN"
-    
-    # Prevenir MIME-type sniffing
+    # Prevenção de MIME-Type sniffing
     Header set X-Content-Type-Options "nosniff"
 </IfModule>
 
-# Proteger arquivos sensíveis
-<FilesMatch "^(\.htaccess|\.htpasswd|\.gitignore|config\.php|db\.php|.*\.sql)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+# Desativar assinatura do servidor
+ServerSignature Off
 
 # Comprimir arquivos para melhor performance
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json
+</IfModule>
+
+# Cache de arquivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType text/javascript "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType application/x-javascript "access plus 1 week"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresDefault "access plus 1 week"
 </IfModule>
