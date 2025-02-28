@@ -1,0 +1,43 @@
+# .htaccess
+
+# Habilitar mod_rewrite
+RewriteEngine On
+
+# Definir diretório base
+RewriteBase /todo-list/
+
+# Não aplicar regras a arquivos ou diretórios existentes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Remover extensão .php das URLs
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# Impedir listagem de diretórios
+Options -Indexes
+
+# Definir página de erro 404
+ErrorDocument 404 /todo-list/404.php
+
+# Configurações de segurança
+<IfModule mod_headers.c>
+    # Prevenir ataques XSS (Cross-Site Scripting)
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Prevenir ataques de clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevenir MIME-type sniffing
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# Proteger arquivos sensíveis
+<FilesMatch "^(\.htaccess|\.htpasswd|\.gitignore|config\.php|db\.php|.*\.sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Comprimir arquivos para melhor performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>
