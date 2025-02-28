@@ -195,7 +195,7 @@ Este projeto está licenciado sob a [Licença MIT](LICENSE) - veja o arquivo LIC
 
 ## 👤 Autor
 
-**Everton "Ethan" de Jesus**
+**Everton "Ethan"**
 - Email: [ethan.emanuelmessias@gmail.com](mailto:seu-email@example.com)
 - GitHub: [evertonethan](https://github.com/evertonethan)
 
