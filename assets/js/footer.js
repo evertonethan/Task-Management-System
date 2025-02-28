@@ -1,105 +1,128 @@
 // assets/js/footer.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Adicionar seções ao footer
-    const footer = document.querySelector('footer');
-    const container = footer.querySelector('.container');
-    
-    // Verificar se o footer já tem conteúdo (além do copyright)
-    if (container.children.length <= 1) {
-        // Limpar o container
-        container.innerHTML = '';
-        
-        // Adicionar seção de marca
-        const brandSection = document.createElement('div');
-        brandSection.classList.add('footer-brand');
-        brandSection.innerHTML = `
-            <h2 class="footer-logo">${APP_NAME}</h2>
-            <p class="footer-description">Sistema de gestão de tarefas simples e eficiente para organizar seu dia a dia de forma produtiva.</p>
-            
-            <div class="footer-contact">
-                <div class="contact-info">
-                    <i class="fas fa-envelope"></i>
-                    <p>contato@example.com</p>
-                </div>
-                <div class="contact-info">
-                    <i class="fas fa-phone"></i>
-                    <p>(00) 12345-6789</p>
-                </div>
-            </div>
-        `;
-        container.appendChild(brandSection);
-        
-        // Adicionar seção de links
-        const linksSection = document.createElement('div');
-        linksSection.classList.add('footer-links');
-        linksSection.innerHTML = `
-            <h3>Links Rápidos</h3>
-            <ul>
-                <li><a href="${BASE_URL}"><i class="fas fa-chevron-right"></i> Início</a></li>
-                <li><a href="${BASE_URL}tasks.php"><i class="fas fa-chevron-right"></i> Minhas Tarefas</a></li>
-                <li><a href="${BASE_URL}profile.php"><i class="fas fa-chevron-right"></i> Meu Perfil</a></li>
-                <li><a href="#"><i class="fas fa-chevron-right"></i> Suporte</a></li>
-                <li><a href="#"><i class="fas fa-chevron-right"></i> Termos de Uso</a></li>
-            </ul>
-        `;
-        container.appendChild(linksSection);
-        
-        // Adicionar seção de social
-        const socialSection = document.createElement('div');
-        socialSection.classList.add('footer-social');
-        socialSection.innerHTML = `
-            <h3>Redes Sociais</h3>
-            <p>Siga-nos nas redes sociais e fique por dentro das novidades.</p>
-            <div class="social-icons">
-                <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            </div>
-        `;
-        container.appendChild(socialSection);
-        
-        // Adicionar copyright na parte inferior
-        const bottomSection = document.createElement('div');
-        bottomSection.classList.add('footer-bottom');
-        bottomSection.innerHTML = `
-            <p>&copy; ${new Date().getFullYear()} ${APP_NAME} - Todos os direitos reservados</p>
-        `;
-        container.appendChild(bottomSection);
-        
-        // Marcar o footer como estendido
-        footer.classList.add('extended');
-    }
-    
-    // Adicionar botão de voltar ao topo
-    const backToTop = document.createElement('a');
-    backToTop.href = '#';
-    backToTop.classList.add('back-to-top');
-    backToTop.innerHTML = '<i class="fas fa-arrow-up"></i>';
-    document.body.appendChild(backToTop);
+    // Botão de voltar ao topo
+    const backToTopButton = document.getElementById('back-to-top');
     
     // Mostrar/esconder botão de voltar ao topo
     window.addEventListener('scroll', function() {
         if (window.pageYOffset > 300) {
-            backToTop.classList.add('show');
+            backToTopButton.classList.add('show');
         } else {
-            backToTop.classList.remove('show');
+            backToTopButton.classList.remove('show');
         }
     });
     
     // Funcionalidade do botão de voltar ao topo
-    backToTop.addEventListener('click', function(e) {
+    backToTopButton.addEventListener('click', function(e) {
         e.preventDefault();
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
     });
-    
-    // Verificar se é uma página simples
-    if (document.body.classList.contains('simple-page')) {
-        footer.classList.add('simple');
-        footer.classList.remove('extended');
+
+    // Gerenciamento de newsletter
+    const newsletterForm = document.getElementById('newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('newsletter-email');
+            const messageDiv = document.getElementById('newsletter-message');
+            
+            if (!emailInput.value.trim()) {
+                showNewsletterMessage('Por favor, informe seu email', 'error');
+                return;
+            }
+            
+            // Simulação de inscrição na newsletter
+            // Em um ambiente real, você enviaria uma requisição para o servidor
+            setTimeout(function() {
+                showNewsletterMessage('Inscrição realizada com sucesso!', 'success');
+                emailInput.value = '';
+            }, 1000);
+        });
+        
+        function showNewsletterMessage(message, type) {
+            const messageDiv = document.getElementById('newsletter-message');
+            messageDiv.textContent = message;
+            messageDiv.className = 'newsletter-message ' + type;
+            
+            // Limpar mensagem após 5 segundos
+            setTimeout(function() {
+                messageDiv.textContent = '';
+                messageDiv.className = 'newsletter-message';
+            }, 5000);
+        }
     }
+
+    // Gerenciamento de estatísticas no rodapé
+    if (typeof USER_ID !== 'undefined') {
+        updateFooterStats();
+    }
+    
+    function updateFooterStats() {
+        // Em um ambiente real, você buscaria esses dados do servidor
+        // Aqui estamos apenas simulando
+        
+        // Supondo que você tenha um endpoint para obter estatísticas
+        const statElements = document.querySelectorAll('.footer-stats .stat-value');
+        
+        if (statElements.length >= 2) {
+            // Simular carregamento
+            setTimeout(function() {
+                // Isso seria substituído por dados reais da API
+                const mockStats = {
+                    total: Math.floor(Math.random() * 20) + 5,
+                    completed: Math.floor(Math.random() * 10) + 1
+                };
+                
+                statElements[0].textContent = mockStats.total;
+                statElements[1].textContent = mockStats.completed;
+            }, 1000);
+        }
+    }
+
+    // Cookie consent
+    const cookieConsent = document.getElementById('cookie-consent');
+    const acceptCookiesBtn = document.getElementById('accept-cookies');
+    
+    // Verificar se o usuário já aceitou os cookies
+    if (!localStorage.getItem('cookies-accepted')) {
+        // Exibir banner após 2 segundos
+        setTimeout(function() {
+            cookieConsent.classList.add('show');
+        }, 2000);
+    }
+    
+    // Quando o usuário aceitar os cookies
+    if (acceptCookiesBtn) {
+        acceptCookiesBtn.addEventListener('click', function() {
+            localStorage.setItem('cookies-accepted', 'true');
+            cookieConsent.classList.remove('show');
+            
+            // Ocultar com animação
+            cookieConsent.style.opacity = '0';
+            cookieConsent.style.transform = 'translateY(20px)';
+            
+            setTimeout(function() {
+                cookieConsent.style.display = 'none';
+            }, 500);
+        });
+    }
+
+    // Animação dos links do rodapé
+    const footerLinks = document.querySelectorAll('.footer-links a');
+    footerLinks.forEach(link => {
+        link.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.style.transform = 'translateX(5px)';
+                setTimeout(() => {
+                    icon.style.transform = 'translateX(0)';
+                }, 300);
+            }
+        });
+    });
 });
