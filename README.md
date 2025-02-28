@@ -195,9 +195,9 @@ Este projeto está licenciado sob a [Licença MIT](LICENSE) - veja o arquivo LIC
 
 ## 👤 Autor
 
-**Seu Nome**
-- Email: [seu-email@example.com](mailto:seu-email@example.com)
-- GitHub: [seu-usuario](https://github.com/seu-usuario)
+**Everton "Ethan" de Jesus**
+- Email: [ethan.emanuelmessias@gmail.com](mailto:seu-email@example.com)
+- GitHub: [evertonethan](https://github.com/evertonethan)
 
 ---
 
