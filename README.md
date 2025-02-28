@@ -15,7 +15,7 @@
 Um sistema moderno e completo para gerenciamento de tarefas, desenvolvido com PHP PDO e MySQL, com interface responsiva e interativa.
 
 <p align="center">
-  <img src="https://ibb.co/r2D929Mm" alt="Sistema de Gestão de Tarefas Preview" width="800"/>
+  <img src="https://i.ibb.co/k2NZ2Z0x/Minhas-Tarefas-Sistema-de-Gest-o-de-Tarefas-02-28-2025-08-26-PM.png" alt="Sistema de Gestão de Tarefas Preview" width="800"/>
 </p>
 
 ## ✨ Características
