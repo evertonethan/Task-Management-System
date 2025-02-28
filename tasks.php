@@ -20,6 +20,8 @@ $extraScripts = [];
 require_once 'includes/header.php';
 ?>
 
+<link rel="stylesheet" href="css/tasks.css">
+
 <div class="tasks-container">
     <div class="tasks-header">
         <h1>Minhas Tarefas</h1>

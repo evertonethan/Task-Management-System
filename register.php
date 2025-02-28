@@ -14,6 +14,8 @@ $pageTitle = 'Cadastro';
 require_once 'includes/header.php';
 ?>
 
+<link rel="stylesheet" href="css/register.css">
+
 <div class="auth-container">
     <div class="auth-card">
         <h2>Cadastro</h2>
