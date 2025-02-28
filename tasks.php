@@ -15,6 +15,8 @@ $extraScripts = ['assets/js/tasks.js'];
 require_once 'includes/header.php';
 ?>
 
+<link rel="stylesheet" href="assets/css/style.css">
+
 <div class="tasks-container">
     <div class="tasks-header">
         <h2>Minhas Tarefas</h2>

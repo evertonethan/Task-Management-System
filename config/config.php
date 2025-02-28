@@ -9,13 +9,35 @@ define('APP_VERSION', '1.0.0');
 // Ambiente (true para produção, false para desenvolvimento)
 define('IS_PRODUCTION', false);
 
-// URLs base
+// Configurações CORS para desenvolvimento
+if (!IS_PRODUCTION) {
+    // Permitir solicitações AJAX de qualquer origem em desenvolvimento
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+
+    // Lidar com preflight OPTIONS
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+}
+
+// Detectar base URL automaticamente
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'];
+$path = dirname($_SERVER['PHP_SELF']);
+$path = rtrim($path, '/') . '/';
+$auto_base_url = $protocol . $host . $path;
+
+// URLs base (com detecção automática como backup)
 if (IS_PRODUCTION) {
     define('BASE_URL', 'https://seu-dominio.com/');
     define('API_URL', 'https://seu-dominio.com/api/');
 } else {
-    define('BASE_URL', 'http://localhost/todo-list/');
-    define('API_URL', 'http://localhost/todo-list/api/');
+    // Você pode definir manualmente ou usar a detecção automática
+    define('BASE_URL', $auto_base_url); // ou 'http://localhost/todo-list/'
+    define('API_URL', $auto_base_url . 'api/'); // ou 'http://localhost/todo-list/api/'
 }
 
 // Tempo de expiração da sessão (2 horas)

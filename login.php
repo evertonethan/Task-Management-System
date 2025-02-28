@@ -14,6 +14,8 @@ $pageTitle = 'Login';
 require_once 'includes/header.php';
 ?>
 
+<link rel="stylesheet" href="assets/css/style.css">
+
 <div class="auth-container">
     <div class="auth-card">
         <h2>Login</h2>
@@ -74,7 +76,18 @@ require_once 'includes/header.php';
                     body: JSON.stringify(data),
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 0) {
+                            throw new Error('Erro de conexão com o servidor');
+                        } else if (response.status === 404) {
+                            throw new Error('API não encontrada. Verifique a configuração de API_URL');
+                        } else {
+                            throw new Error('Erro de servidor: ' + response.status);
+                        }
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         showMessage('Login realizado com sucesso! Redirecionando...', 'success');
@@ -86,8 +99,16 @@ require_once 'includes/header.php';
                     }
                 })
                 .catch(error => {
-                    showMessage('Erro ao conectar com o servidor', 'error');
                     console.error('Erro:', error);
+
+                    // Verificar se o erro é um problema de CORS ou conexão
+                    if (error.message.includes('Failed to fetch') ||
+                        error.message.includes('NetworkError') ||
+                        error.message.includes('conexão')) {
+                        showMessage('Erro ao conectar com o servidor. Verifique sua conexão de internet ou contate o administrador.', 'error');
+                    } else {
+                        showMessage(error.message || 'Erro ao processar sua solicitação', 'error');
+                    }
                 });
         });
 

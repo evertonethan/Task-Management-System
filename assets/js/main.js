@@ -13,14 +13,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 credentials: 'include'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Resposta do servidor não foi ok: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     window.location.href = BASE_URL + 'login.php';
+                } else {
+                    showNotification('Não foi possível fazer logout: ' + (data.error || 'Erro desconhecido'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Erro ao fazer logout:', error);
+                showNotification('Erro ao conectar com o servidor. Verifique sua conexão de internet.', 'error');
             });
         });
     }

@@ -11,7 +11,15 @@ class Database
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
             $this->conn = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
         } catch (PDOException $e) {
-            die("Erro de conexão com o banco de dados: " . $e->getMessage());
+            // Registrar erro para debug
+            error_log("Erro de conexão PDO: " . $e->getMessage());
+
+            // Exibir mensagem amigável (remover em produção para não expor detalhes)
+            if (defined('IS_PRODUCTION') && IS_PRODUCTION) {
+                die("Erro de conexão com o banco de dados. Por favor, tente novamente mais tarde.");
+            } else {
+                die("Erro de conexão com o banco de dados: " . $e->getMessage());
+            }
         }
     }
 

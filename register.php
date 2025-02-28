@@ -14,6 +14,9 @@ $pageTitle = 'Cadastro';
 require_once 'includes/header.php';
 ?>
 
+
+<link rel="stylesheet" href="assets/css/style.css">
+
 <div class="auth-container">
     <div class="auth-card">
         <h2>Cadastro</h2>
@@ -111,7 +114,18 @@ require_once 'includes/header.php';
                     body: JSON.stringify(data),
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 0) {
+                            throw new Error('Erro de conexão com o servidor');
+                        } else if (response.status === 404) {
+                            throw new Error('API não encontrada. Verifique a configuração de API_URL');
+                        } else {
+                            throw new Error('Erro de servidor: ' + response.status);
+                        }
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         showMessage('Cadastro realizado com sucesso! Redirecionando...', 'success');
@@ -123,8 +137,16 @@ require_once 'includes/header.php';
                     }
                 })
                 .catch(error => {
-                    showMessage('Erro ao conectar com o servidor', 'error');
                     console.error('Erro:', error);
+
+                    // Mensagem amigável para o usuário
+                    if (error.message.includes('Failed to fetch') ||
+                        error.message.includes('NetworkError') ||
+                        error.message.includes('conexão')) {
+                        showMessage('Erro ao conectar com o servidor. Verifique se o servidor está online e sua conexão de internet está funcionando.', 'error');
+                    } else {
+                        showMessage(error.message || 'Erro ao processar sua solicitação', 'error');
+                    }
                 });
         });
 

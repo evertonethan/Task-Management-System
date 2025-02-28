@@ -6,9 +6,26 @@ require_once '../classes/Task.php';
 
 // Setar cabeçalhos para API
 header('Content-Type: application/json');
+
+// Configurações CORS completas para compatibilidade com diferentes servidores
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Requested-With');
+header('Access-Control-Max-Age: 86400'); // Cache para 24 horas
+
+// Compatibilidade com diferentes servidores
+// Alguns servidores não passam corretamente o corpo da requisição para métodos PUT e DELETE
+if ($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE') {
+    if (empty(file_get_contents('php://input'))) {
+        // Se não houver dados no corpo, tente verificar se foram enviados via POST
+        $_PUT = $_POST;
+        $_DELETE = $_POST;
+    } else {
+        // Se houver dados no corpo, decodifique-os
+        $_PUT = json_decode(file_get_contents('php://input'), true) ?: [];
+        $_DELETE = $_PUT;
+    }
+}
 
 // Para requisições OPTIONS (CORS preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

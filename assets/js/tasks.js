@@ -64,7 +64,22 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'GET',
             credentials: 'include'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 0) {
+                    throw new Error('Erro de conexão com o servidor');
+                } else if (response.status === 404) {
+                    throw new Error('API não encontrada. Verifique a configuração de API_URL');
+                } else if (response.status === 401) {
+                    // Redirecionamento em caso de sessão expirada
+                    window.location.href = BASE_URL + 'login.php?session_expired=true';
+                    throw new Error('Sessão expirada. Por favor, faça login novamente.');
+                } else {
+                    throw new Error('Erro de servidor: ' + response.status);
+                }
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 tasks = data.tasks || [];
@@ -76,7 +91,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Erro ao carregar tarefas:', error);
-            showError('Erro ao carregar tarefas. Verifique sua conexão de internet.');
+            
+            if (error.message.includes('Failed to fetch') || 
+                error.message.includes('NetworkError') || 
+                error.message.includes('conexão')) {
+                showError(`Erro ao conectar com o servidor. Verifique sua conexão de internet ou se o servidor está online.<br><br>
+                           <button class="btn btn-primary" onclick="window.location.reload()">
+                               <i class="fas fa-sync"></i> Tentar novamente
+                           </button>`);
+            } else {
+                showError(error.message || 'Erro ao carregar tarefas');
+            }
         });
     }
     
