@@ -1,0 +1,323 @@
+/* assets/css/footer.css */
+
+/* Variáveis CSS - Garantindo consistência com o header */
+:root {
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --secondary-color: #2ecc71;
+    --secondary-dark: #27ae60;
+    --gray-light: #f8f9fa;
+    --gray: #ced4da;
+    --gray-dark: #6c757d;
+    --text-color: #343a40;
+    --white: #ffffff;
+    --footer-bg: #2c3e50;
+    --footer-text: #ecf0f1;
+    --footer-link: #3498db;
+    --footer-link-hover: #2ecc71;
+    
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    --border-radius: 4px;
+    --footer-height: 260px;  /* Altura aumentada para o novo design */
+    --footer-small-height: 100px;  /* Para versão compacta */
+}
+
+/* Estilos do Rodapé Principal */
+footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    padding: 3rem 0 2rem;
+    position: relative;
+    margin-top: 3rem;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* Versão estendida do rodapé */
+footer.extended {
+    padding: 3.5rem 0 2.5rem;
+}
+
+/* Container adaptado para o layout do rodapé */
+footer .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+/* Elemento decorativo superior */
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+/* Logo e informações do site */
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--white);
+    position: relative;
+    display: inline-block;
+}
+
+.footer-logo::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background-color: var(--primary-color);
+    margin-top: 0.5rem;
+}
+
+.footer-description {
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--gray);
+}
+
+/* Links rápidos */
+.footer-links h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+    color: var(--white);
+    position: relative;
+    padding-bottom: 0.8rem;
+}
+
+.footer-links h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 30px;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-links a {
+    color: var(--gray-light);
+    text-decoration: none;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+}
+
+.footer-links a:hover {
+    color: var(--footer-link-hover);
+    transform: translateX(5px);
+}
+
+.footer-links a i {
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--primary-color);
+}
+
+/* Redes sociais */
+.footer-social h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+    color: var(--white);
+    position: relative;
+    padding-bottom: 0.8rem;
+}
+
+.footer-social h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 30px;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: var(--white);
+    transition: var(--transition);
+}
+
+.social-icons a:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+/* Informações de contato */
+.footer-contact {
+    margin-top: 1.5rem;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.contact-info i {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-right: 0.8rem;
+    width: 20px;
+    text-align: center;
+}
+
+.contact-info p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* Linha de copyright */
+.footer-bottom {
+    margin-top: 2rem;
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    grid-column: 1 / -1;
+}
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+/* Botão de subir para o topo */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.2rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+    z-index: 99;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+}
+
+/* Animação sutil de pulsação */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.back-to-top.show:hover {
+    animation: pulse 1.5s infinite;
+}
+
+/* Rodapé simples para páginas com pouco conteúdo */
+footer.simple {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    padding: 1.5rem 0;
+    text-align: center;
+}
+
+footer.simple .container {
+    display: block;
+}
+
+footer.simple p {
+    margin: 0;
+}
+
+/* Media Queries para responsividade */
+@media screen and (max-width: 768px) {
+    .footer-bottom {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+    
+    .back-to-top {
+        width: 45px;
+        height: 45px;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    footer {
+        padding: 2rem 0 1.5rem;
+    }
+    
+    .footer-logo {
+        font-size: 1.5rem;
+    }
+    
+    .footer-links h3,
+    .footer-social h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+        bottom: 15px;
+        right: 15px;
+        font-size: 1rem;
+    }
+}
+

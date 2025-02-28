@@ -23,6 +23,9 @@
         <script src="<?php echo BASE_URL . $script; ?>"></script>
     <?php endforeach; ?>
 <?php endif; ?>
+
+<script src="<?php echo BASE_URL; ?>assets/js/header.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/js/footer.js"></script>
 </body>
 
 </html>
