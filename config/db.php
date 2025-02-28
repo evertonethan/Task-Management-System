@@ -12,8 +12,8 @@ if (!IS_DEVELOPMENT) {
     // Produção
     define('DB_HOST', 'localhost'); // Corrigido: o host deve ser 'localhost', não uma URL
     define('DB_NAME', 'devfro86_todo_list_system');
-    define('DB_USER', 'devfro86_root');
-    define('DB_PASS', 'Emanuel2033**Messias');
+    define('DB_USER', 'devfro86_ethan');
+    define('DB_PASS', 'Messias33*');
 } else {
     // Desenvolvimento
     define('DB_HOST', 'localhost');
