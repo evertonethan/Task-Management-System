@@ -11,7 +11,7 @@
 
     <!-- Estilos CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/header.css">
 
     <?php if (isset($extraStyles) && !empty($extraStyles)): ?>
         <?php foreach ($extraStyles as $style): ?>
@@ -24,7 +24,7 @@
     <header class="navbar">
         <div class="container navbar-container">
             <a href="<?php echo BASE_URL; ?>" class="navbar-brand">
-                <i class="fas fa-tasks"></i> <?php echo APP_NAME; ?>
+                <i class="fas fa-tasks"></i> <span class="navbar-brand-text"><?php echo APP_NAME; ?></span>
             </a>
 
             <nav class="navbar-nav">
